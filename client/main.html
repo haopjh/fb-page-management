@@ -1,0 +1,68 @@
+<head>
+  <title>Page Management App</title>
+</head>
+
+<body>
+    <div class="container">
+        <nav class="navbar navbar-default">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#">
+                        Management App
+                    </a>
+                </div>
+                <div class="navbar-login pull-right">
+                    {{> loginButtons}}
+                </div>
+            </div>
+        </nav>
+
+        
+    </div>
+</body>
+
+<template name="login">
+    Please Login to start using the app
+</template>
+
+<template name="overview">
+    <div class="container">
+        {{#each getPageList}}
+            <div class="page-item">
+                {{{category}}}:
+                <a href="/page/{{id}}">{{{name}}}</a>
+            </div>
+        {{/each}}
+    </div>
+</template>
+
+<template name="page">
+    <div class="container">
+        {{#with getPage}}
+            <div class="page-title">
+                {{{name}}} ({{{category}}})
+            </div>
+        {{/with}}
+
+        <div class="post-container col-sm-12">
+            {{#each getPost}}
+                <div class="col-sm-4">
+                    <div class="post-item">
+                        <div class="post-content">
+                            {{message}}
+                        </div>
+
+                        <div class="post-bottom">
+                            {{from.name}} <br/>
+                            Views: {{getPostImpression id}}&nbsp;
+                            <span class="glyphicon glyphicon-thumbs-up"></span>&nbsp;{{likes.summary.total_count}}<br/>
+                            <span class="glyphicon glyphicon-time"></span>
+                            &nbsp;{{getTime created_time}}&nbsp;|&nbsp;{{#if is_published}}Published{{else}}Not published{{/if}}
+                        </div>
+                        
+                    </div>
+                </div>
+            {{/each}}
+        </div>
+    </div>
+</template>
