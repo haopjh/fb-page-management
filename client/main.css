@@ -14,9 +14,20 @@ body {
 }
 
 
+
 /*****
- Post items
+ Post page
 ******/
+.new-post-container {
+    margin-top: 20px;
+    width: 300px;
+}
+.post-input {
+    width: 100%;
+}
+.btn-create-post {
+    margin-top: 10px;
+}
 
 .post-item {
     padding: 9px 10px;

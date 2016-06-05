@@ -14,35 +14,47 @@ let internalCache = new InternalCache();
 
 Meteor.methods({
     listPages: function () {
+
         if (Meteor.user()) {
+
             let fbObj = Meteor.user().services.facebook;
-            // Retrieve list of pages
-            let res = HTTP.call('GET', 
-                `${graphUrl}/${fbObj.id}/accounts`,
-                {
-                    params: {
-                        access_token: fbObj.accessToken
-                    }
-                });
 
+            let key = "user_"+fbObj.id;
+            if (internalCache.checkMemoryValidity(key)) {
 
-            if (res.data) {
-                let dataList = res.data;
-                let pages = [];
-                dataList.data.forEach(function(data) {
-                    pages.push({
-                        id: data.id,
-                        accessToken: data.access_token,
-                        category: data.category,
-                        name: data.name
+                // Retrieve list of pages
+                let res = HTTP.call('GET', 
+                    `${graphUrl}/${fbObj.id}/accounts`,
+                    {
+                        params: {
+                            access_token: fbObj.accessToken
+                        }
                     });
-                });
+
+
+                if (res.data) {
+                    let dataList = res.data;
+                    let pages = [];
+                    dataList.data.forEach(function(data) {
+                        pages.push({
+                            id: data.id,
+                            accessToken: data.access_token,
+                            category: data.category,
+                            name: data.name
+                        });
+                    });
+
+                    return pages;
+                }
+
+                // Cache results
+                internalCache.cache(key, res.data);
 
                 return pages;
+            } else {
+                // Return from cache
+                return internalCache.retrieve(key);
             }
-                
-
-            return pages;
         } else {
             return "User is not logged in";
         }
@@ -70,6 +82,7 @@ Meteor.methods({
                 return "User is not logged in";
             } 
         } else {
+            // Return from cache
             return internalCache.retrieve(key);
         }
     },
@@ -92,6 +105,7 @@ Meteor.methods({
 
             return res.data;
         } else {
+            // Return from cache
             return internalCache.retrieve(key);
         }
     },
@@ -115,12 +129,13 @@ Meteor.methods({
                 
             return res.data.data[0].values[0].value;
         } else {
+            // Return from cache
             return internalCache.retrieve(key);
         }
     },
 
     // Used for all posts
-    getPostsImpressions: function (pageId, posts, accessToken) {
+    // getPostsImpressions: function (pageId, posts, accessToken) {
         // let key = "postsImpression_"+pageId;
         // if (internalCache.checkMemoryValidity(key)) {
         //     let results = {};
@@ -146,7 +161,19 @@ Meteor.methods({
         // } else {
         //     return inMemory[key].data;
         // }
+    // }
+
+    newPost: function (message, pageId, pageAccessToken) {
+        let res = HTTP.call('POST', 
+            `${graphUrl}/${pageId}/feed`,
+            {
+                params: {
+                    access_token: pageAccessToken,
+                    message: message
+                }
+            });
+
+        return res;
     }
 
-    //124965504300711_336211673176092
 });

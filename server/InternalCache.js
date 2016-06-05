@@ -26,5 +26,8 @@ InternalCache.prototype.cache = function(key, data) {
 InternalCache.prototype.retrieve = function(key) {
     return this.inMemory[key] ? this.inMemory[key].data : null;
 }
+InternalCache.prototype.reset = function(key) {
+    this.inMemory = {};
+}
 
 module.exports.InternalCache = InternalCache;

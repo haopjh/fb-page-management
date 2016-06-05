@@ -70,8 +70,22 @@ Template.page.helpers({
     getCount: function(arr) {
         return arr ? arr.length : 0;
     },
-
 });
+
+Template.page.events({
+    'click .btn-create-post': function (e) {
+        let value = $(".post-input").val();
+        if (value) {
+            let page = Session.get("page");
+
+            // Meteor.call("newPost", value, page.id, page.access_token, function (err, res) {
+            //     if (res) {
+
+            //     }
+            // });
+        }
+    },
+})
 
 
 

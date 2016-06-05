@@ -7,7 +7,7 @@
         <nav class="navbar navbar-default">
             <div class="container-fluid">
                 <div class="navbar-header">
-                    <a class="navbar-brand" href="#">
+                    <a class="navbar-brand" href="/overview">
                         Management App
                     </a>
                 </div>
@@ -43,6 +43,13 @@
                 {{{name}}} ({{{category}}})
             </div>
         {{/with}}
+
+        <div class="new-post-container">
+            <textarea type="text" class="form-control post-input" placeholder="Enter a new post here"></textarea>
+
+            <button class="btn btn-primary btn-create-post" type="button">Post!</button>
+        </div>
+                
 
         <div class="post-container col-sm-12">
             {{#each getPost}}
