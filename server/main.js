@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import { HTTP } from 'meteor/http';
-import {InternalCache} from './InternalCache.js'
+import { InternalCache } from './InternalCache.js';
 
 Meteor.startup(() => {
     // Need to check if user's access token is expired, if yes, kick user out
@@ -87,23 +87,31 @@ Meteor.methods({
         }
     },
 
-    getPost: function (pageId, accessToken) {
+    getPosts: function (pageId, accessToken) {
 
         let key = "posts_"+pageId;
         if (internalCache.checkMemoryValidity(key)) {
             let res = HTTP.call('GET', 
-                `${graphUrl}/${pageId}/feed`,
+                `${graphUrl}/${pageId}/promotable_posts`,
                 {
                     params: {
                         access_token: accessToken,
-                        fields: ["id","message","likes.limit(0).summary(true)","created_time","from","is_published"]
+                        fields: ["id","message","likes.limit(0).summary(true)","created_time","from","is_published","status_type"]
                     }
                 });
 
             // Cache results
-            internalCache.cache(key, res.data);
+            var results = [];
 
-            return res.data;
+            for (let i=0; i<res.data.data.length; i++) {
+                if (res.data.data[i].status_type === "mobile_status_update" ||
+                    res.data.data[i].status_type === "added_photos") {
+                    results.push(res.data.data[i]);
+                }
+            }
+            internalCache.cache(key, results);
+
+            return results;
         } else {
             // Return from cache
             return internalCache.retrieve(key);
@@ -163,16 +171,17 @@ Meteor.methods({
         // }
     // }
 
-    newPost: function (message, pageId, pageAccessToken) {
+    newPost: function (message, pageId, published, pageAccessToken) {
         let res = HTTP.call('POST', 
             `${graphUrl}/${pageId}/feed`,
             {
                 params: {
                     access_token: pageAccessToken,
-                    message: message
+                    message: message,
+                    published: published
                 }
             });
-
+        internalCache.clear("posts_"+pageId);
         return res;
     }
 

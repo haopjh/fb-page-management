@@ -6,13 +6,11 @@ function InternalCache() {
 
 InternalCache.prototype.checkMemoryValidity = function(key) {
     // cache for 60 seconds
-    let valid = !this.inMemory[key] || ((Date.now() / 1000 - this.inMemory[key].timestamp) > (60));
-    if (!valid) {
-    //     console.log("KEY:" + key + " ::: Retrieve data from cache");
-    // } else {
-    //     console.log("KEY:" + key + " ::: Pulled data from external network");
-    }
-    return valid;
+    let validity = !this.inMemory[key] || 
+        ((Date.now() / 1000 - this.inMemory[key].timestamp) > (60));
+
+    // Returns true if does not exist in cache
+    return validity;
 }
 
 
@@ -26,8 +24,8 @@ InternalCache.prototype.cache = function(key, data) {
 InternalCache.prototype.retrieve = function(key) {
     return this.inMemory[key] ? this.inMemory[key].data : null;
 }
-InternalCache.prototype.reset = function(key) {
-    this.inMemory = {};
+InternalCache.prototype.clear = function(key) {
+    this.inMemory[key] = null;
 }
 
 module.exports.InternalCache = InternalCache;

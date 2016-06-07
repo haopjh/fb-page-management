@@ -1,4 +1,13 @@
 /* CSS declarations go here */
+@-webkit-keyframes rotation {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 
 /****
  General
@@ -6,11 +15,41 @@
 body {
     font-family: "Roboto";
 }
+.loading .btn-text {
+    display: none;
+}
+.btn-loading {
+    display: none;
+}
+.loading .btn-loading {
+    display: block;
+    animation: rotation 2s linear infinite;
+}
+button {
+    width: 130px;
+    height: 35px;
+    outline: none !important;
+    box-shadow: none !important;
+}
+button + button {
+    margin-left: 35px;
+}
 .navbar-header {
     float: left;
 }
 .navbar-login {
     margin: 12px 0;
+}
+.loading-icon {
+    display: none;
+}
+.loading .loading-icon {
+    display: inline-block;
+    font-size: 4rem;
+    position: relative;
+    left: 50%;
+    top: 50px;
+    animation: rotation 2s linear infinite;
 }
 
 
@@ -30,6 +69,7 @@ body {
 }
 
 .post-item {
+    box-shadow: 0px 0px 3px lightgray;
     padding: 9px 10px;
     margin-top: 20px;
     border: 1px solid lightgray;
