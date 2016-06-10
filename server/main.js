@@ -218,7 +218,6 @@ Meteor.methods({
                     access_token: pageAccessToken
                 }
             });
-        
         if (res.data.success) {
             internalCache.clear("posts_"+pageId);
             return true;

@@ -41,7 +41,6 @@ Template.page.onCreated(function () {
     let pageId = this.data.pageId();
     Meteor.call('getPage', pageId, function(err, res) {
         Session.set("page", res);
-        console.log(res);
         Meteor.call('getPosts', res.id, res.access_token , function(err, posts) {
             Session.set("posts", posts);
 
@@ -66,7 +65,6 @@ Template.page.helpers({
         return Session.get("page"); 
     },
     getPosts: function() {
-        console.log(Session.get("posts"));
         return Session.get("posts");
     },
     getPostImpression: function(id) {
