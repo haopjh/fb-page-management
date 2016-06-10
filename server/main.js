@@ -6,7 +6,7 @@ Meteor.startup(() => {
     // Need to check if user's access token is expired, if yes, kick user out
 });
 
-const graphUrl = "https://graph.facebook.com/v2.6";
+const graphUrl = Meteor.settings.graphUrl;
 
 // Create a static inMemory caching function
 let internalCache = new InternalCache();
@@ -101,24 +101,24 @@ Meteor.methods({
                 });
 
             // Cache results
-            var results = [];
+            // var results = [];
 
-            for (let i=0; i<res.data.data.length; i++) {
-                if (res.data.data[i].status_type === "mobile_status_update" ||
-                    res.data.data[i].status_type === "added_photos") {
-                    results.push(res.data.data[i]);
-                }
-            }
-            internalCache.cache(key, results);
+            // for (let i=0; i<res.data.data.length; i++) {
+            //     if (res.data.data[i].status_type === "mobile_status_update" ||
+            //         res.data.data[i].status_type === "added_photos") {
+            //         results.push(res.data.data[i]);
+            //     }
+            // }
+            internalCache.cache(key, res.data.data);
 
-            return results;
+            return res.data.data;
         } else {
             // Return from cache
             return internalCache.retrieve(key);
         }
     },
 
-    // Used for a single post
+    // Used to get impression for a single post
     getPostImpression: function (postId, accessToken) {
         let key = "postImpression_"+postId;
         if (internalCache.checkMemoryValidity(key)) {
@@ -142,34 +142,55 @@ Meteor.methods({
         }
     },
 
-    // Used for all posts
-    // getPostsImpressions: function (pageId, posts, accessToken) {
-        // let key = "postsImpression_"+pageId;
-        // if (internalCache.checkMemoryValidity(key)) {
-        //     let results = {};
-        //     posts.forEach(function (post) {
-        //         let res = HTTP.call('GET', 
-        //             `${graphUrl}/${post.id}/insights/post_impressions_unique`,
-        //             {
-        //                 params: {
-        //                     access_token: accessToken,
-        //                     fields: ["values"]
-        //                 }
-        //             });
-        //         results[post.id] = res.data.data[0].values[0].value;
-        //     });
+    // Used to get impressions for all posts
+    getPostsImpressions: function (pageId, postIdList, accessToken) {
+        let key = "postsImpression_"+pageId;
+        if (internalCache.checkMemoryValidity(key)) {
+            let results = {};
+            let batch = [];
 
-        //     // Cache results
-        //     inMemory[key] = {
-        //         timestamp: Date.now() / 1000,
-        //         data: res.data.data[0].values[0].value
-        //     }
-            
-        //     return results;
-        // } else {
-        //     return inMemory[key].data;
-        // }
-    // }
+            for (let i in postIdList) {
+                batch.push({
+                    "method": "GET",
+                    "relative_url": postIdList[i]+"/insights/post_impressions_unique",
+                })
+            }
+
+            let res = HTTP.call('POST', graphUrl, {
+                    params: {
+                        access_token: accessToken,
+                        batch: JSON.stringify(batch)
+                    }
+                });
+
+            var results = res.data;
+
+            var impressionList = {};
+
+            // Parse the result list and 
+            // convert it into a simple readable list
+            try {
+                for (let i in results) {
+                    let result = JSON.parse(results[i].body);
+                    let innerData = result.data[0].values;
+                    impressionList[result.data[0].id.split("/")[0]] = 
+                        result.data[0].values[0].value;
+                }
+            } catch (e) {
+                //Incase something goes wrong
+                console.error(e);
+            }
+
+            // Cache results
+            internalCache.cache(key, impressionList);
+
+            return impressionList;
+
+        } else {
+            // Return from cache
+            return internalCache.retrieve(key);
+        }
+    },
 
     newPost: function (message, pageId, published, pageAccessToken) {
         let res = HTTP.call('POST', 
@@ -181,8 +202,44 @@ Meteor.methods({
                     published: published
                 }
             });
-        internalCache.clear("posts_"+pageId);
-        return res;
-    }
+
+        if (res.data.id) {
+            internalCache.clear("posts_"+pageId);
+            return res;
+        }
+            
+    },
+
+    deletePost: function (pageId, postId, pageAccessToken) {
+        let res = HTTP.call('DELETE', 
+            `${graphUrl}/${postId}`,
+            {
+                params: {
+                    access_token: pageAccessToken
+                }
+            });
+        
+        if (res.data.success) {
+            internalCache.clear("posts_"+pageId);
+            return true;
+        }
+    },
+
+    editPost: function (pageId, message, postId, pageAccessToken) {
+        let res = HTTP.call('POST', 
+            `${graphUrl}/${postId}`,
+            {
+                params: {
+                    access_token: pageAccessToken,
+                    message: message
+                }
+            });
+
+        if (res.data.success) {
+            internalCache.clear("posts_"+pageId);
+            return res;
+        }
+        
+    },
 
 });

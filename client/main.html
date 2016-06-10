@@ -22,7 +22,14 @@
 </body>
 
 <template name="login">
-    Please Login to start using the app
+    <div class="container" style="text-align:center;">
+        <h4>
+            Please login to start using the app <br /><br />
+            <small>
+                Located at the top right-hand corner!:D
+            </small>
+        </h4>
+    </div>
 </template>
 
 <template name="overview">
@@ -39,46 +46,76 @@
 <template name="page">
     <div class="container">
         {{#with getPage}}
-            <div class="page-title">
+            <h3 class="page-title">
                 {{{name}}} ({{{category}}})
-            </div>
+            </h3>
         {{/with}}
 
         <div class="new-post-container">
-            <textarea type="text" class="form-control post-input" placeholder="Enter a new post here"></textarea>
+            <textarea type="text" class="form-control post-input" placeholder="Enter a new post here" maxlength="63206"></textarea>
 
             <button class="btn btn-primary btn-create-post" type="button">
                 <span class="btn-text">Publish now!</span>
                 <span class="glyphicon glyphicon-repeat btn-loading"></span>
             </button>
             <button class="btn btn-default btn-create-post btn-unpublished-post" type="button">
-                <span class="btn-text">Publish later!</span>
+                <span class="btn-text">Unpublished feed</span>
                 <span class="glyphicon glyphicon-repeat btn-loading"></span>
             </button>
         </div>
-                
 
-        <div class="post-container col-sm-12 loading">
+        <div class="post-container col-sm-12 loading" data-filter="all">
+            <div class="filter-options col-sm-12">
+                <div class="btn-group" role="group" aria-label="Justified button group">
+                    <span class="btn btn-default active" data-type="all" role="button">All</span>
+                    <span class="btn btn-default" data-type="published" role="button">Published</span>
+                    <span class="btn btn-default" data-type="unpublished" role="button">Unpublished</span>
+                </div> 
+            </div>
 
             <span class="glyphicon glyphicon-repeat loading-icon"></span>
             {{#each getPosts}}
-                <div class="col-sm-4">
-                    <div class="post-item">
+                <div class="col-sm-4" data-type="{{#if is_published}}published{{else}}unpublished{{/if}}">
+                    <div class="post-item" data-id="{{id}}">
                         <div class="post-content">
-                            {{message}}
+                            <textarea type="text" class="form-control post-edit-input" maxlength="63206" readonly>{{message}}</textarea>
                         </div>
 
                         <div class="post-bottom">
-                            {{from.name}} <br/>
+                            {{from.name}} 
+                            <br/>
+
                             Views: {{getPostImpression id}}&nbsp;
-                            <span class="glyphicon glyphicon-thumbs-up"></span>&nbsp;{{likes.summary.total_count}}<br/>
+                            <span class="glyphicon glyphicon-thumbs-up"></span>&nbsp;{{likes.summary.total_count}}
+                            &nbsp;&nbsp; 
+
+                            {{showStatus status_type}}
+                            <br/>
+
                             <span class="glyphicon glyphicon-time"></span>
                             &nbsp;{{getTime created_time}}&nbsp;|&nbsp;{{#if is_published}}Published{{else}}Not published{{/if}}
                         </div>
+
+                        <div class="post-bottom-edit">
+                            <button class="btn btn-primary btn-edit-post" type="button">
+                                <span class="btn-text">Update</span>
+                                <span class="glyphicon glyphicon-repeat btn-loading"></span>
+                            </button>
+                        </div>
                         
+                        <div class="icon-overlay">
+                            <span class="glyphicon glyphicon-edit glyp-edit"></span>
+                            <span class="glyphicon glyphicon glyphicon-trash glyp-delete"></span>
+                        </div>
                     </div>
                 </div>
             {{/each}}
+
+            <!-- TODO: Pagination for feeds-->
+            <!-- {{#if hasPagination}}
+                <btn type="text">More</btn>
+            {{/if}} -->
         </div>
+
     </div>
 </template>
